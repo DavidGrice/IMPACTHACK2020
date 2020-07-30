@@ -1,0 +1,18 @@
+body {
+    background-color: hotpink;
+}
+
+.container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.embassyDataContainer {
+    margin: 0% 10px 10% 10px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    height: 100%;
+}

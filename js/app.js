@@ -43,9 +43,9 @@ var raycaster = new THREE.Raycaster();
 var mouse = new THREE.Vector2();
 
 // Create the Earth Object
-let earthMap = new THREE.TextureLoader().load( 'images/earthmap4k.jpg' );
-let earthBumpMap = new THREE.TextureLoader().load( 'images/earthbump4k.jpg' );
-let earthSpecMap = new THREE.TextureLoader().load( 'images/earthspec4k.jpg' );
+let earthMap = new THREE.TextureLoader().load( '../resources/img/earthmap4k.jpg' );
+let earthBumpMap = new THREE.TextureLoader().load( '../resources/img/earthbump4k.jpg' );
+let earthSpecMap = new THREE.TextureLoader().load( '../resources/img/earthspec4k.jpg' );
 
 let geometry = new THREE.SphereGeometry( 10, 32, 32 );
 let material = new THREE.MeshPhongMaterial({
@@ -62,12 +62,12 @@ scene.add( sphere );
 createSkyBox = (scene) => {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
-        '../images/space_right.png',
-        '../images/space_left.png',
-        '../images/space_top.png',
-        '../images/space_bot.png',
-        '../images/space_front.png',
-        '../images/space_back.png',
+        '../resources/img/space_right.png',
+        '../resources/img/space_left.png',
+        '../resources/img/space_top.png',
+        '../resources/img/space_bot.png',
+        '../resources/img/space_front.png',
+        '../resources/img/space_back.png',
     ])
     scene.background = texture;
 };
@@ -145,19 +145,61 @@ function addTimeline(e) {
     removeTimeline();
     var target = e.target;
     for (let i = 0; i < timelineData.length; i++) {
-        if (timelineData[i].reopen_embassy <= target.value && timelineData[i].reopen_embassy != '0') {
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        } else if (timelineData[i].reopen_legation <= target.value && timelineData[i].reopen_legation != '0'){ 
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        } else if (timelineData[i].closure <= target.value && timelineData[i].closure != '0') {
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#df1c1c', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        } else if (timelineData[i].elevate_to_embassy <= target.value && timelineData[i].elevate_to_embassy != '0') {
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        } else if (timelineData[i].establish_embassy <= target.value && timelineData[i].establish_embassy != '0') {
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        } else if (timelineData[i].establish_legation <= target.value && timelineData[i].establish_legation != '0') {
-            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, 'white', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        if (
+            (
+                timelineData[i].reopen_embassy <= target.value && timelineData[i].reopen_embassy != '0') 
+            ){
+                addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
         }
+        else if (
+            (
+                timelineData[i].elevate_to_embassy <= target.value && timelineData[i].elevate_to_embassy > timelineData[i].closure && timelineData[i].elevate_to_embassy != '0')
+            | (timelineData[i].elevate_to_embassy <= target.value && target.value < timelineData[i].closure && timelineData[i].elevate_to_embassy != '0')
+            ) 
+        {
+            addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
+        }
+        else if (
+            (
+                timelineData[i].establish_embassy <= target.value && timelineData[i].establish_embassy > timelineData[i].closure && timelineData[i].establish_embassy != '0')
+            ||  (timelineData[i].establish_embassy <= target.value && target.value < timelineData[i].closure && timelineData[i].establish_embassy != '0')    
+            ){
+                addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
+        } else if (
+            (
+                timelineData[i].reopen_legation <= target.value && timelineData[i].reopen_legation > timelineData[i].closure && timelineData[i].reopen_legation != '0')
+            //||  (timelineData[i].reopen_legation <= target.value && target.value < timelineData[i].closure && timelineData[i].reopen_legation != '0')    
+            ){
+                addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
+        } else if (
+            (
+                timelineData[i].closure <= target.value && target.value < timelineData[i].reopen_legation && timelineData[i].reopen_legation != '0' && timelineData[i].closure !='0') 
+            || (timelineData[i].closure <= target.value && target.value < timelineData[i].reopen_embassy && timelineData[i].reopen_embassy != '0' && timelineData[i].closure !='0')
+            || (timelineData[i].closure <= target.value && target.value < timelineData[i].establish_embassy && timelineData[i].establish_embassy != '0' && timelineData[i].closure !='0')
+            || (timelineData[i].closure <= target.value && target.value < timelineData[i].elevate_to_embassy && timelineData[i].elevate_to_embassy != '0' && timelineData[i].closure !='0')
+            || (timelineData[i].closure <= target.value && target.value > timelineData[i].establish_legation && timelineData[i].establish_legation != '0' && timelineData[i].closure !='0')
+            || (timelineData[i].closure <= target.value && timelineData[i].elevate_to_embassy == '0' && timelineData[i].reopen_embassy == '0' && timelineData[i].reopen_legation == '0' && timelineData[i].closure !='0')
+            ){
+                addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#df1c1c', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
+        } else if (
+            (
+                timelineData[i].establish_legation <= target.value && timelineData[i].establish_legation != '0') 
+            ){
+                addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, 'white', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
+        }
+        // if (timelineData[i].reopen_embassy <= target.value && timelineData[i].reopen_embassy != '0') {
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // } else if (timelineData[i].reopen_legation <= target.value && timelineData[i].reopen_legation != '0'){ 
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // } else if (timelineData[i].elevate_to_embassy <= target.value && timelineData[i].elevate_to_embassy != '0') {
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // } else if (timelineData[i].establish_embassy <= target.value && timelineData[i].establish_embassy != '0') {
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // } else if (timelineData[i].closure <= target.value && timelineData[i].closure != '0') {
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#df1c1c', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // }else if (timelineData[i].establish_legation <= target.value && timelineData[i].establish_legation != '0') {
+        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, 'white', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
+        // }
     }
     console.log(sphere.children.length)
 }
@@ -192,6 +234,7 @@ addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, la
     mesh.userData.country = country;
     mesh.userData.language = language;
     mesh.userData.status = status;
+    mesh.userData.color = color;
     sphere.add(mesh);
 };
 
@@ -228,9 +271,9 @@ onMouseClick = (event) => {
         document.querySelector('#reopen-legation').innerText = "Reopened Legation: " + intersects[0].object.userData.reopen_legation
         document.querySelector('#reopen-embassy').innerText = "Reopened Embassy: " + intersects[0].object.userData.reopen_embassy
     }
-
     for (var i = 0; i < intersects.length; i++) {
         document.querySelector('#bureau').innerText = "Bureau: " + intersects[0].object.userData.bureau
+        document.getElementById("bureau").style.color = intersects[0].object.userData.color;
         document.querySelector('#post').innerText = "Post: " + intersects[0].object.userData.post
         document.querySelector('#country-two').innerText = "Country: " + intersects[0].object.userData.country
         document.querySelector('#language').innerText = "Languages: " + intersects[0].object.userData.language

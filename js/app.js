@@ -1,12 +1,7 @@
-var embassyStuff = document.getElementById("embassy");
-embassyStuff.addEventListener("click", changeToEmbassy);
+// DATA RETRIEVAL
+// Used in obtaining the local data (stored in JSON files)
 
-var timelineStuff = document.getElementById("timeline");
-timelineStuff.addEventListener("click", changeToTimeline);
-
-var historyStuff = document.getElementById("history");
-historyStuff.addEventListener("click", changeToHistory);
-
+// Historical timeline data
 diplomacy_timeline = [];
 
 var xhttp3 = new XMLHttpRequest();
@@ -22,6 +17,7 @@ xhttp3.onreadystatechange = function() {
 xhttp3.open("GET", "data/Diplomacy_Timeline.json", true);
 xhttp3.send();
 
+// Data with posts, country, etc.
 embassy_data = [];
 var xhttp2 = new XMLHttpRequest();
 xhttp2.onreadystatechange = function() {
@@ -36,6 +32,7 @@ xhttp2.onreadystatechange = function() {
 xhttp2.open("GET", "data/Final_data.json", false);
 xhttp2.send();
 
+// Embassy timeline data
 timelineData = [];
 var xhttp = new XMLHttpRequest();
 xhttp.onreadystatechange = function() {
@@ -50,24 +47,55 @@ xhttp.onreadystatechange = function() {
 xhttp.open("GET", "data/Embassy_Timeline.json", true);
 xhttp.send();
 
-// Creat THREEJS Environment
-let scene = new THREE.Scene();
-let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
-let renderer = new THREE.WebGLRenderer( {antialias: true} );
-renderer.setSize( window.innerWidth, window.innerHeight );
-let controls = new THREE.OrbitControls( camera, renderer.domElement );
-document.body.appendChild( renderer.domElement );
-let lights = [];
-var raycaster = new THREE.Raycaster();
-var mouse = new THREE.Vector2();
-var touchTest = new THREE.Vector2();
+// CREATING THREEJS ENVIRONMENT
+// This is the beginning of where the scene is setup, for the insertion of data.
 
-// Create the Earth Object
+// Create environment where objects are displayed
+let scene = new THREE.Scene();
+
+// Create camera to view objects
+let camera = new THREE.PerspectiveCamera( 75, window.innerWidth / window.innerHeight, 0.1, 1000 );
+
+// Create renderer so objects can be placed in scene (set antialias to true for smooth-edges)
+let renderer = new THREE.WebGLRenderer( {antialias: true} );
+
+// Have renderer be the size of entire window's width/height
+renderer.setSize( window.innerWidth, window.innerHeight );
+
+// Create controls for user to interact with environment (scene)
+let controls = new THREE.OrbitControls( camera, renderer.domElement );
+
+// Append this renderer to the HTML DOM element
+document.body.appendChild( renderer.domElement );
+
+// Some generic global variables used for lights, interaction, etc.
+// Lights is an array used for the entire scene
+let lights = [];
+
+// Raycaster used for mouse interaction of the scene
+let raycaster = new THREE.Raycaster();
+
+// Mouse is a 2D-vector which takes X,Y coords so window/scene knows where it is located
+// for interactivity
+let mouse = new THREE.Vector2();
+
+// TouchTest is a variable used for responsive-environment(mobile devices)
+let touchTest = new THREE.Vector2();
+
+// CREATE THE EARTH
+// Earthmap is used for the basic texture which has the various continents/countries/etc. on it
 let earthMap = new THREE.TextureLoader().load( '../images/earthmap4k.jpg' );
+
+// EarthBumpMap is used to give the texture some "depth" so it is more appealing on eyes and data visuals
 let earthBumpMap = new THREE.TextureLoader().load( '../images/earthbump4k.jpg' );
+
+// EarthSpecMap gives the earth some shininess to the environment, allowing reflectivity off of lights
 let earthSpecMap = new THREE.TextureLoader().load( '../images/earthspec4k.jpg' );
 
+// Geometry is what the shape/size of the globe will be
 let geometry = new THREE.SphereGeometry( 10, 32, 32 );
+
+// Material is how the globe will look like
 let material = new THREE.MeshPhongMaterial({
     map: earthMap,
     bumpMap: earthBumpMap,
@@ -76,14 +104,22 @@ let material = new THREE.MeshPhongMaterial({
     specular: new THREE.Color('grey')
 });
 
+// Sphere is the final product which ends up being rendered on scene, also is used as a parent for the points of interest
 let sphere = new THREE.Mesh( geometry, material );
-scene.add( sphere );
-let parent = new THREE.Object3D();
-parent.position.y = 60;
-scene.add( parent );
-let pointLight = new THREE.PointLight( 0xffffff, 0.9 );
-var light = new THREE.DirectionalLight( 0xffffff );
 
+// Add the sphere to scene
+scene.add( sphere );
+
+// Parent is used for the historical timeline, which we append the photos' canvases to
+let parent = new THREE.Object3D();
+
+// Set the position for more centered scene
+parent.position.y = 60;
+
+// Add the object to the scene
+scene.add( parent );
+
+// CreateSkyBox allows the scene to have more attractiveness to it, in this case by having the blue starred images around globe
 createSkyBox = (scene) => {
     const loader = new THREE.CubeTextureLoader();
     const texture = loader.load([
@@ -97,6 +133,7 @@ createSkyBox = (scene) => {
     scene.background = texture;
 };
 
+// CreateLights is a function which creates the lights and adds them to the scene.
 createLights = (scene) => {
     lights[0] = new THREE.PointLight(0x00FFFF, .3, 0);
     lights[1] = new THREE.PointLight(0x00FFFF, .4, 0);
@@ -113,18 +150,25 @@ createLights = (scene) => {
     scene.add(lights[3]);
 };
 
+// AddSceneObjects adds the items to the scene
 addSceneObjects = (scene, camera, renderer) => {
     createSkyBox(scene);
     createLights(scene);
 };
 
+// Calling the function to create and add to scene
 addSceneObjects(scene, camera, renderer);
+
+// Change position so we can see objects
 camera.position.z = 20;
+
+// Disable control function, so users do not zoom too far in or pan away from center
 controls.enableZoom = false;
 controls.enablePan = false;
 controls.update();
 controls.saveState();
 
+// Removes the points of interest and photos from scene, freeing up memory and space to have better performance
 function removeChildren(){
     let destroy = sphere.children.length;
     while (destroy--) {
@@ -138,6 +182,7 @@ function removeChildren(){
     }
 }
 
+// Adds the points of interest to globe, along with other information which is used to display in HTML elements
 addTimelineCoord = (sphere, latitude, longitude, color, country, establish_legation, elevate_to_embassy, establish_embassy, closure, reopen_legation, reopen_embassy) => {
     if (country == 'Austria') {
         let particleGeo = new THREE.SphereGeometry(.11, 32, 32);
@@ -206,6 +251,7 @@ addTimelineCoord = (sphere, latitude, longitude, color, country, establish_legat
     }
 };
 
+// Adds the points of interest in a "timeseries" manner, so users can see the diplomatic timeline as it progresses
 function addTimeline(e) {
     removeChildren();
     var target = e.target;
@@ -233,7 +279,6 @@ function addTimeline(e) {
         } else if (
             (
                 timelineData[i].reopen_legation <= target.value && timelineData[i].reopen_legation > timelineData[i].closure && timelineData[i].reopen_legation != '0')
-            //||  (timelineData[i].reopen_legation <= target.value && target.value < timelineData[i].closure && timelineData[i].reopen_legation != '0')    
             ){
                 addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
         } else if (
@@ -252,24 +297,11 @@ function addTimeline(e) {
             ){
                 addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, 'white', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy);
         }
-        // if (timelineData[i].reopen_embassy <= target.value && timelineData[i].reopen_embassy != '0') {
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // } else if (timelineData[i].reopen_legation <= target.value && timelineData[i].reopen_legation != '0'){ 
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#0066FF', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // } else if (timelineData[i].elevate_to_embassy <= target.value && timelineData[i].elevate_to_embassy != '0') {
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // } else if (timelineData[i].establish_embassy <= target.value && timelineData[i].establish_embassy != '0') {
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#fecf6a', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // } else if (timelineData[i].closure <= target.value && timelineData[i].closure != '0') {
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, '#df1c1c', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // }else if (timelineData[i].establish_legation <= target.value && timelineData[i].establish_legation != '0') {
-        //     addTimelineCoord(sphere, timelineData[i].lat, timelineData[i].lon, 'white', timelineData[i].country, timelineData[i].establish_legation, timelineData[i].elevate_to_embassy, timelineData[i].establish_embassy, timelineData[i].closure, timelineData[i].reopen_legation, timelineData[i].reopen_embassy); 
-        // }
     }
     console.log(sphere.children.length)
 }
 
-// Create the Coordinates for the sphere to be added
+// Creates and adds Coordinates for the globe.
 addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, language, status) => {
     let particleGeo = new THREE.SphereGeometry(.1, 32, 32);
     let lat = latitude * (Math.PI/180);
@@ -303,22 +335,26 @@ addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, la
     sphere.add(mesh);
 };
 
+// If user changes window size, this allows scene to update accordingly (maintaining aspect ratio)
 onWindowResize = () => {
     camera.aspect = window.innerWidth / window.innerHeight;
     camera.updateProjectionMatrix();
     renderer.setSize(window.innerWidth, window.innerHeight);
 };
 
+// Allows for the scene to move and be interacted with
 animate = () => {
     requestAnimationFrame( animate );
     render();
     controls.update();   
 }
 
+// Updates camera renderer
 render = () => {
     renderer.render( scene, camera );
 }
 
+// Used for the interaction of scene, so users can click on points of interest or photos for information
 onMouseClick = (event) => {
     event.preventDefault();
     mouse.x = ((event.clientX / window.innerWidth) * 2 - 1);
@@ -384,6 +420,7 @@ onMouseClick = (event) => {
     }
 }
 
+// Same as previous function but for mboile/responsive devices
 function onTouchStart (event) {
     event.preventDefault();
     touchTest.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
@@ -445,16 +482,34 @@ function onTouchStart (event) {
         }
 }
 
-var slider = document.getElementById("slider");
+// This takes the information input by user in timeline so the globe updates when number changes
+let slider = document.getElementById("slider");
 slider.addEventListener("input", addTimeline);
+
+// Set the other div's to none, so the main content is only seen
 document.getElementById('info-box').style.display = 'none';
 document.getElementById('info-box-two').style.display = 'none';
 document.getElementById('diplomacy-box').style.display = 'none';
+
+// Add event listeners so DOM knows what functions to use when objects/items are interacted with
 window.addEventListener('resize', onWindowResize, false);
 window.addEventListener('click', onMouseClick, false);
 window.addEventListener('touchstart', onTouchStart, false);
+
+// These three variables are used for changing the scene based upon user input
+let embassyStuff = document.getElementById("embassy");
+embassyStuff.addEventListener("click", changeToEmbassy);
+
+let timelineStuff = document.getElementById("timeline");
+timelineStuff.addEventListener("click", changeToTimeline);
+
+let historyStuff = document.getElementById("history");
+historyStuff.addEventListener("click", changeToHistory);
+
+// Call the animation function so scene is properly rendered
 animate();
 
+// This changes the scenes children to focus on the globe with wmbassies
 function changeToEmbassy() {
     removeChildren();
     document.querySelector('#bureau').innerText = "Bureau: ";
@@ -465,6 +520,13 @@ function changeToEmbassy() {
     document.getElementById('info-box-two').style.display = 'flex';
     document.getElementById('info-box').style.display = 'none';
     document.getElementById('diplomacy-box').style.display = 'none';
+    document.getElementById('title-subtitle').style.right = '0';
+    document.getElementById('title-subtitle').style.top = '3vh';
+    document.getElementById('title-subtitle').style.width = '20vw';
+    document.getElementById('title-subtitle').style.height = '12.5vh';    
+    document.getElementById('main-title').style.fontSize = '25pt';    
+    document.getElementById('main-subtitle').style.fontSize = '15pt'; 
+
     // Get the data from JSON file
     for(let i = 0; i < embassy_data.length; i++){
         if(embassy_data[i].Bureau==='EUR'){
@@ -491,13 +553,13 @@ function changeToEmbassy() {
         controls.update();
     }
     controls.enableZoom = false;
-    //camera.set(3.0260065921289407, 1.2246467991473519e-15, 19.76975680438157)
     camera.position.z = 19.76975680438157;
     camera.position.y = 1.2246467991473519e-15;
     controls.reset();
     controls.update();
 };
 
+// This changes scenes children to focus on historical diplomacy
 function changeToTimeline() {
     removeChildren();
     document.querySelector('#country').innerText = "Point of Interest: ";
@@ -510,6 +572,12 @@ function changeToTimeline() {
     document.getElementById('info-box-two').style.display = 'none';
     document.getElementById('info-box').style.display = 'flex';
     document.getElementById('diplomacy-box').style.display = 'none';
+    document.getElementById('title-subtitle').style.right = '0';
+    document.getElementById('title-subtitle').style.top = '3vh';
+    document.getElementById('title-subtitle').style.width = '20vw';
+    document.getElementById('title-subtitle').style.height = '12.5vh';    
+    document.getElementById('main-title').style.fontSize = '25pt';    
+    document.getElementById('main-subtitle').style.fontSize = '15pt'; 
 
     if(camera.fov != 75){
         camera.fov = 75;
@@ -529,10 +597,18 @@ function changeToTimeline() {
     controls.update();
 };
 
+// This changes the scenes children to be rendering the historical timeline.
 function changeToHistory() {
     document.getElementById('info-box-two').style.display = 'none';
     document.getElementById('info-box').style.display = 'none';
     document.getElementById('diplomacy-box').style.display = 'flex';
+    document.getElementById('title-subtitle').style.right = '0';
+    document.getElementById('title-subtitle').style.top = '3vh';
+    document.getElementById('title-subtitle').style.width = '20vw';
+    document.getElementById('title-subtitle').style.height = '12.5vh';    
+    document.getElementById('main-title').style.fontSize = '25pt';    
+    document.getElementById('main-subtitle').style.fontSize = '15pt';    
+
     removeChildren();
     if(camera.fov != 65){
         camera.fov = 65;
@@ -546,13 +622,10 @@ function changeToHistory() {
         controls.minPolarAngle = 1.54;
         controls.rotateSpeed = 0.5;
         controls.update();
-        light.position.set( 10, 10, 11 );
-        light.position.normalize();
     }
     document.querySelector('#source-1').style.display = 'none';
     document.querySelector('#source-2').style.display = 'none';
 
-    // angles
     var camSize = 100;
     var startAngle = 0;
     var circleRadius = 230;
@@ -633,6 +706,7 @@ function changeToHistory() {
         "61":"61.jpg"
     }
 
+    // This adds the timeline data to the scene along with assigning other needed infor for div manipulation
     addTimelineData = (i,parent, date, date_2, event, source, source_2) => {
             let x_position = centerX + Math.sin(startRadians) * circleRadius * 6;
             let z_position = centerZ + Math.cos(startRadians) * circleRadius * 6;

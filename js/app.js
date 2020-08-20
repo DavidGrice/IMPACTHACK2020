@@ -417,7 +417,7 @@ onMouseClick = (event) => {
                     document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2;
                     document.querySelector('#event').innerText = intersects[0].object.userData.event; 
                     document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
-                    document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source);
+                    document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source_2);
                     document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
                     document.querySelector("#source-2").innerText = intersects[0].object.userData.type_2;
                     const item = intersects[0];
@@ -513,7 +513,7 @@ function onTouchStart (event) {
                 document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2;
                 document.querySelector('#event').innerText = intersects[0].object.userData.event;
                 document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
-                document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source);
+                document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source_2);
                 document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
                 document.querySelector("#source-2").innerText = intersects[0].object.userData.type_2;           
             }

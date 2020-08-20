@@ -557,6 +557,7 @@ function changeToEmbassy() {
     hidden = true;
     document.querySelector("#help-box").style.display = 'none'
     document.querySelector("#more-info-box").style.display = 'none'
+    document.querySelector("#title-subtitle").style.display = 'none'
     if(isOther != true) {
         isOther = true;
         isHistory = false;
@@ -623,6 +624,7 @@ function changeToTimeline() {
     hidden = true;
     document.querySelector("#help-box").style.display = 'none'
     document.querySelector("#more-info-box").style.display = 'none'
+    document.querySelector("#title-subtitle").style.display = 'none'
     if(isOther != true) {
         isOther = true;
         isHistory = false;
@@ -676,6 +678,7 @@ function changeToHistory() {
     hidden = true;
     document.querySelector("#help-box").style.display = 'none'
     document.querySelector("#more-info-box").style.display = 'none'
+    document.querySelector("#title-subtitle").style.display = 'none'
     if(isHistory != true){
         isHistory = true;
         isOther = false;

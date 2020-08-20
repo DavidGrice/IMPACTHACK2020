@@ -397,7 +397,7 @@ onMouseClick = (event) => {
     else if(isHistory == true) {
         let intersects = raycaster.intersectObjects(parent.children);
             for (var i = 0; i < intersects.length; i++) {
-                if (intersects[0].object.userData.date_2 == '') {
+                if (intersects[0].object.userData.source_2 == '') {
                     document.querySelector('#source-1').style.display = 'flex';
                     document.querySelector('#source-2').style.display = 'none';
                     console.log(intersects[0])
@@ -405,9 +405,9 @@ onMouseClick = (event) => {
                     document.querySelector('#event').innerText = intersects[0].object.userData.event;
                     document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
                     document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
-                    const item = intersects[0];
-                    var point = item.point;
-                    var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+                    // const item = intersects[0];
+                    // var point = item.point;
+                    // var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
 
             } else {
                 document.querySelector('#source-2').style.display = 'flex';
@@ -420,9 +420,9 @@ onMouseClick = (event) => {
                     document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source_2);
                     document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
                     document.querySelector("#source-2").innerText = intersects[0].object.userData.type_2;
-                    const item = intersects[0];
-                    var point = item.point;
-                    var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+                    // const item = intersects[0];
+                    // var point = item.point;
+                    // var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
                 }
             }
         }
@@ -495,7 +495,7 @@ function onTouchStart (event) {
     }
     else if (isHistory == true){
         let intersects = raycaster.intersectObjects(parent.children);
-        if (intersects[0].object.userData.date_2 == '') {
+        if (intersects[0].object.userData.source_2 == '') {
             document.querySelector('#source-1').style.display = 'flex';
             for (var i = 0; i < intersects.length; i++) {
                 console.log(intersects[0])

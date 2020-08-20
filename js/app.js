@@ -163,10 +163,14 @@ addSceneObjects(scene, camera, renderer);
 camera.position.z = 20;
 
 // Disable control function, so users do not zoom too far in or pan away from center
-controls.enableZoom = false;
+controls.minDistance = 12;
+controls.maxDistance = 30;
 controls.enablePan = false;
 controls.update();
 controls.saveState();
+
+let isHistory = false;
+let isOther = true;
 
 // Removes the points of interest and photos from scene, freeing up memory and space to have better performance
 function removeChildren(){
@@ -302,7 +306,7 @@ function addTimeline(e) {
 }
 
 // Creates and adds Coordinates for the globe.
-addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, language, status) => {
+addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, language, status, social_url, embassy_url) => {
     let particleGeo = new THREE.SphereGeometry(.1, 32, 32);
     let lat = latitude * (Math.PI/180);
     let lon = -longitude * (Math.PI/180);
@@ -332,6 +336,8 @@ addEmbassyCoord = (sphere, latitude, longitude, color, post, bureau, country, la
     mesh.userData.language = language;
     mesh.userData.status = status;
     mesh.userData.color = color;
+    mesh.userData.social_url = social_url;
+    mesh.userData.embassy_url = embassy_url;
     sphere.add(mesh);
 };
 
@@ -361,8 +367,8 @@ onMouseClick = (event) => {
     mouse.y = (-(event.clientY / window.innerHeight) * 2 + 1);
     raycaster.setFromCamera(mouse, camera);
 
-    if(sphere.children.length > 0){
-        var intersects = raycaster.intersectObjects(sphere.children);
+    if(isOther == true){
+        let intersects = raycaster.intersectObjects(sphere.children);
 
         for (var i = 0; i < intersects.length; i++) {
             document.querySelector('#country').innerText = "Point of Interest: " + intersects[0].object.userData.country
@@ -380,55 +386,87 @@ onMouseClick = (event) => {
             document.querySelector('#country-two').innerText = "Country: " + intersects[0].object.userData.country
             document.querySelector('#language').innerText = "Languages: " + intersects[0].object.userData.language
             document.querySelector('#status').innerText = "Status: " + intersects[0].object.userData.status
+            document.getElementById('more-info-box').style.display = 'flex';
+            document.querySelector("#social-url").setAttribute("href", intersects[0].object.userData.social_url);
+            document.querySelector("#embassy-url").setAttribute("href", intersects[0].object.userData.embassy_url);
         }
+        const item = intersects[0];
+        var point = item.point;
+        var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
     }
-    else if(parent.children.length > 0) {
-        var intersects = raycaster.intersectObjects(parent.children);
-        if (intersects[0].object.userData.date_2 == '') {
-            document.querySelector('#source-1').style.display = 'flex';
+    else if(isHistory == true) {
+        let intersects = raycaster.intersectObjects(parent.children);
             for (var i = 0; i < intersects.length; i++) {
-                console.log(intersects[0])
-                document.querySelector('#date-1').innerText = intersects[0].object.userData.date
-                document.querySelector('#event').innerText = intersects[0].object.userData.event
-                document.querySelector("#source-1").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source, '_blank');
-                    }, 3000);
-                });
+                if (intersects[0].object.userData.date_2 == '') {
+                    document.querySelector('#source-1').style.display = 'flex';
+                    document.querySelector('#source-2').style.display = 'none';
+                    console.log(intersects[0])
+                    document.querySelector('#date-1').innerText = intersects[0].object.userData.date;
+                    document.querySelector('#event').innerText = intersects[0].object.userData.event;
+                    document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
+                    document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
+                    const item = intersects[0];
+                    var point = item.point;
+                    var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+
+            } else {
+                document.querySelector('#source-2').style.display = 'flex';
+                document.querySelector('#source-1').style.display = 'flex';
+                for (var i = 0; i < intersects.length; i++) {
+                    console.log(intersects[0])
+                    document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2;
+                    document.querySelector('#event').innerText = intersects[0].object.userData.event; 
+                    document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
+                    document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source);
+                    document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
+                    document.querySelector("#source-2").innerText = intersects[0].object.userData.type_2;
+                    const item = intersects[0];
+                    var point = item.point;
+                    var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+                }
             }
         }
-        else {
-            document.querySelector('#source-2').style.display = 'flex';
-            document.querySelector('#source-1').style.display = 'flex';
-            for (var i = 0; i < intersects.length; i++) {
-                console.log(intersects[0])
-                document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2
-                document.querySelector('#event').innerText = intersects[0].object.userData.event
-                document.querySelector("#source-1").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source, '_blank');
-                    }, 3000);
-                });
-                document.querySelector("#source-2").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source_2, '_blank');
-                    }, 3000);
-                });
-                
-            }
-        }
+        const item = intersects[0];
+        var point = item.point;
+        var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+    }
+}
+
+// Functions for clicking on buttons
+sourceOneFunc = () => {
+    window.open(document.querySelector("#source-1").getAttribute("href"), "_blank")
+}
+sourceTwoFunc = () => {
+    window.open(document.querySelector("#source-2").getAttribute("href"), "_blank")
+}
+socialUrlFunc = () => {
+    window.open(document.querySelector("#social-url").getAttribute("href"), "_blank")
+}
+embassyUrlFunc = () => {
+    window.open(document.querySelector("#embassy-url").getAttribute("href"), "_blank")
+}
+
+let hidden = false;
+instructionFunc = () => {
+    hidden = !hidden;
+    if(hidden){
+        document.querySelector("#help-box").style.display = 'none'
+    } else {
+        document.querySelector("#help-box").style.display = 'flex'
     }
 }
 
 // Same as previous function but for mboile/responsive devices
 function onTouchStart (event) {
+
     event.preventDefault();
     touchTest.x = (event.touches[0].clientX / window.innerWidth) * 2 - 1;
     touchTest.y = - (event.touches[0].clientY / window.innerHeight) * 2 + 1;
 
     raycaster.setFromCamera(touchTest,camera);
+    if(isOther == true) {
 
-        var intersects = raycaster.intersectObjects(scene.children);
+        let intersects = raycaster.intersectObjects(sphere.children);
 
         for (var i = 0; i < intersects.length; i++) {
             document.querySelector('#country').innerText = "Point of Interest: " + intersects[0].object.userData.country
@@ -440,24 +478,31 @@ function onTouchStart (event) {
             document.querySelector('#reopen-embassy').innerText = "Reopened Embassy: " + intersects[0].object.userData.reopen_embassy
         }
         for (var i = 0; i < intersects.length; i++) {
+            
             document.querySelector('#bureau').innerText = "Bureau: " + intersects[0].object.userData.bureau
             document.getElementById("bureau").style.color = intersects[0].object.userData.color;
             document.querySelector('#post').innerText = "Post: " + intersects[0].object.userData.post
             document.querySelector('#country-two').innerText = "Country: " + intersects[0].object.userData.country
             document.querySelector('#language').innerText = "Languages: " + intersects[0].object.userData.language
             document.querySelector('#status').innerText = "Status: " + intersects[0].object.userData.status
+            document.getElementById('more-info-box').style.display = 'flex';
+            document.querySelector("#social-url").setAttribute("href", intersects[0].object.userData.social_url);
+            document.querySelector("#embassy-url").setAttribute("href", intersects[0].object.userData.embassy_url);
         }
+        const item = intersects[0];
+        var point = item.point;
+        var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+    }
+    else if (isHistory == true){
+        let intersects = raycaster.intersectObjects(parent.children);
         if (intersects[0].object.userData.date_2 == '') {
             document.querySelector('#source-1').style.display = 'flex';
             for (var i = 0; i < intersects.length; i++) {
                 console.log(intersects[0])
-                document.querySelector('#date-1').innerText = intersects[0].object.userData.date
-                document.querySelector('#event').innerText = intersects[0].object.userData.event
-                document.querySelector("#source-1").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source, '_blank');
-                    }, 3000);
-                });
+                document.querySelector('#date-1').innerText = intersects[0].object.userData.date;
+                document.querySelector('#event').innerText = intersects[0].object.userData.event;
+                document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
+                document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
             }
         }
         else {
@@ -465,21 +510,18 @@ function onTouchStart (event) {
             document.querySelector('#source-1').style.display = 'flex';
             for (var i = 0; i < intersects.length; i++) {
                 console.log(intersects[0])
-                document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2
-                document.querySelector('#event').innerText = intersects[0].object.userData.event
-                document.querySelector("#source-1").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source, '_blank');
-                    }, 3000);
-                });
-                document.querySelector("#source-2").addEventListener('click', function() {
-                    setTimeout(function() {
-                        window.open(intersects[0].object.userData.source_2, '_blank');
-                    }, 3000);
-                });
-                
+                document.querySelector('#date-1').innerText = intersects[0].object.userData.date + " - " + intersects[0].object.userData.date_2;
+                document.querySelector('#event').innerText = intersects[0].object.userData.event;
+                document.querySelector("#source-1").setAttribute("href", intersects[0].object.userData.source);
+                document.querySelector("#source-2").setAttribute("href", intersects[0].object.userData.source);
+                document.querySelector("#source-1").innerText = intersects[0].object.userData.type_1;
+                document.querySelector("#source-2").innerText = intersects[0].object.userData.type_2;           
             }
         }
+        const item = intersects[0];
+        var point = item.point;
+        var camDistance = camera.position.copy(point).normalize.multiplyScalar(camDistance)
+    }
 }
 
 // This takes the information input by user in timeline so the globe updates when number changes
@@ -490,6 +532,7 @@ slider.addEventListener("input", addTimeline);
 document.getElementById('info-box').style.display = 'none';
 document.getElementById('info-box-two').style.display = 'none';
 document.getElementById('diplomacy-box').style.display = 'none';
+document.getElementById('more-info-box').style.display = 'none';
 
 // Add event listeners so DOM knows what functions to use when objects/items are interacted with
 window.addEventListener('resize', onWindowResize, false);
@@ -511,6 +554,13 @@ animate();
 
 // This changes the scenes children to focus on the globe with wmbassies
 function changeToEmbassy() {
+    hidden = true;
+    document.querySelector("#help-box").style.display = 'none'
+    document.querySelector("#more-info-box").style.display = 'none'
+    if(isOther != true) {
+        isOther = true;
+        isHistory = false;
+    }
     removeChildren();
     document.querySelector('#bureau').innerText = "Bureau: ";
     document.querySelector('#post').innerText = "Post: ";
@@ -526,21 +576,27 @@ function changeToEmbassy() {
     document.getElementById('title-subtitle').style.height = '12.5vh';    
     document.getElementById('main-title').style.fontSize = '25pt';    
     document.getElementById('main-subtitle').style.fontSize = '15pt'; 
+    document.getElementById("history").style.backgroundColor = "white";
+    document.getElementById("history").style.color = "black"; 
+    document.getElementById("timeline").style.backgroundColor = "white";
+    document.getElementById("timeline").style.color = "black"; 
+    document.getElementById("embassy").style.backgroundColor = "black";
+    document.getElementById("embassy").style.color = "white"; 
 
     // Get the data from JSON file
     for(let i = 0; i < embassy_data.length; i++){
         if(embassy_data[i].Bureau==='EUR'){
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'red', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'red', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         } else if(embassy_data[i].Bureau==='NEA') {
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'orange', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'orange', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         } else if(embassy_data[i].Bureau==='SCA') {
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'yellow', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'yellow', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         } else if(embassy_data[i].Bureau==='EAP') {
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'violet', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'violet', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         } else if(embassy_data[i].Bureau==='AF') {
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'pink', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'pink', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         } else if (embassy_data[i].Bureau==='WHA') {
-            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'white', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status);
+            addEmbassyCoord(sphere,embassy_data[i].Latitude, embassy_data[i].Longitude, 'white', embassy_data[i].Post, embassy_data[i].Bureau, embassy_data[i].Country, embassy_data[i].Languages, embassy_data[i].Status, embassy_data[i].Social, embassy_data[i].Embassy_Url);
         }
     }
     if(camera.fov != 75){
@@ -548,19 +604,29 @@ function changeToEmbassy() {
         camera.near = 0.1;
         camera.far = 1000;
         camera.updateProjectionMatrix();
-
+        controls.enableZoom = true;
+        controls.minDistance = 12;
+        controls.maxDistance = 30;
+        controls.minPolarAngle = 0;
+        controls.maxPolarAngle = Math.PI;
         controls.reset();
         controls.update();
     }
-    controls.enableZoom = false;
-    camera.position.z = 19.76975680438157;
-    camera.position.y = 1.2246467991473519e-15;
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI;
     controls.reset();
     controls.update();
 };
 
 // This changes scenes children to focus on historical diplomacy
 function changeToTimeline() {
+    hidden = true;
+    document.querySelector("#help-box").style.display = 'none'
+    document.querySelector("#more-info-box").style.display = 'none'
+    if(isOther != true) {
+        isOther = true;
+        isHistory = false;
+    }
     removeChildren();
     document.querySelector('#country').innerText = "Point of Interest: ";
     document.querySelector('#establish-legation').innerText = "Established Legation: ";
@@ -578,27 +644,42 @@ function changeToTimeline() {
     document.getElementById('title-subtitle').style.height = '12.5vh';    
     document.getElementById('main-title').style.fontSize = '25pt';    
     document.getElementById('main-subtitle').style.fontSize = '15pt'; 
+    document.getElementById("history").style.backgroundColor = "white";
+    document.getElementById("history").style.color = "black"; 
+    document.getElementById("embassy").style.backgroundColor = "white";
+    document.getElementById("embassy").style.color = "black"; 
+    document.getElementById("timeline").style.backgroundColor = "black";
+    document.getElementById("timeline").style.color = "white"; 
+
 
     if(camera.fov != 75){
         camera.fov = 75;
         camera.near = 0.1;
         camera.far = 1000;
         camera.updateProjectionMatrix();
-        
-        controls.enablePan = false;
+        controls.enableZoom = true;
+        controls.minDistance = 12;
+        controls.maxDistance = 30;
         controls.maxPolarAngle = Math.PI;
         controls.minPolarAngle = 0;
         controls.reset();
         controls.update();
     }
-    camera.position.z = 19.76975680438157;
-    camera.position.y = 1.2246467991473519e-15;
+    controls.minPolarAngle = 0;
+    controls.maxPolarAngle = Math.PI;
     controls.reset();
     controls.update();
 };
 
 // This changes the scenes children to be rendering the historical timeline.
 function changeToHistory() {
+    hidden = true;
+    document.querySelector("#help-box").style.display = 'none'
+    document.querySelector("#more-info-box").style.display = 'none'
+    if(isHistory != true){
+        isHistory = true;
+        isOther = false;
+    }
     document.getElementById('info-box-two').style.display = 'none';
     document.getElementById('info-box').style.display = 'none';
     document.getElementById('diplomacy-box').style.display = 'flex';
@@ -607,7 +688,13 @@ function changeToHistory() {
     document.getElementById('title-subtitle').style.width = '20vw';
     document.getElementById('title-subtitle').style.height = '12.5vh';    
     document.getElementById('main-title').style.fontSize = '25pt';    
-    document.getElementById('main-subtitle').style.fontSize = '15pt';    
+    document.getElementById('main-subtitle').style.fontSize = '15pt';
+    document.getElementById("timeline").style.backgroundColor = "white";
+    document.getElementById("timeline").style.color = "black"; 
+    document.getElementById("embassy").style.backgroundColor = "white";
+    document.getElementById("embassy").style.color = "black"; 
+    document.getElementById("history").style.backgroundColor = "black";
+    document.getElementById("history").style.color = "white";    
 
     removeChildren();
     if(camera.fov != 65){
@@ -618,6 +705,8 @@ function changeToHistory() {
         camera.position.z = 1535;
         controls.enableZoom = false;
         controls.enablePan = false;
+        controls.minDistance = 1535;
+        controls.maxDistance = 1535;
         controls.maxPolarAngle = 1.54;
         controls.minPolarAngle = 1.54;
         controls.rotateSpeed = 0.5;
@@ -707,7 +796,7 @@ function changeToHistory() {
     }
 
     // This adds the timeline data to the scene along with assigning other needed infor for div manipulation
-    addTimelineData = (i,parent, date, date_2, event, source, source_2) => {
+    addTimelineData = (i,parent, date, date_2, event, source, source_2, type_1, type_2) => {
             let x_position = centerX + Math.sin(startRadians) * circleRadius * 6;
             let z_position = centerZ + Math.cos(startRadians) * circleRadius * 6;
                 let loader = new THREE.TextureLoader();
@@ -731,12 +820,14 @@ function changeToHistory() {
                 mesh.userData.event = event;
                 mesh.userData.source = source;
                 mesh.userData.source_2 = source_2;
+                mesh.userData.type_1 = type_1;
+                mesh.userData.type_2 = type_2;
 
                 parent.add( mesh ); 
     }
 
     for ( let i = 0; i < diplomacy_timeline.length; i++ ) {
-        addTimelineData(i, parent, diplomacy_timeline[i].Date, diplomacy_timeline[i].Date_2, diplomacy_timeline[i].Event, diplomacy_timeline[i].Source_1, diplomacy_timeline[i].Source_2)
+        addTimelineData(i, parent, diplomacy_timeline[i].Date, diplomacy_timeline[i].Date_2, diplomacy_timeline[i].Event, diplomacy_timeline[i].Source_1, diplomacy_timeline[i].Source_2,diplomacy_timeline[i].Type_1, diplomacy_timeline[i].Type_2)
     }
     camera.updateProjectionMatrix();
 }

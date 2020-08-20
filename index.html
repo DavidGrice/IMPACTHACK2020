@@ -2,14 +2,14 @@
 <html>
 	<head>
 		<meta charset="utf-8">
-		<title>#IMPACTHACK2020</title>
+		<title>IMPACTHACK2020</title>
 		<link rel="stylesheet" type="text/css" href="../css/style.css" media="screen" />
 		<script type="text/javascript" src="../js/three.js"></script>
 		<script type="text/javascript" src="../js/OrbitControls.js"></script>
 	</head>
 	<body>
 		<div id="title-subtitle">
-			<div id="main-title">IMPACTHACK2020</div>
+			<div id="main-title">IMPACTHACK 2020</div>
 			<div id="main-subtitle">By David Grice</div>
 		</div>
 
@@ -19,6 +19,7 @@
 			<button id="embassy">Current Posts</button>
 			<button id="timeline">Diplomatic Timeline</button>
 			<button id="history">Historical Events</button>
+			<button id="instructions" onclick=instructionFunc()>Instructions</button>
 		</div>
 
 		<div id="info-box">
@@ -44,14 +45,28 @@
 			<div id="post"></div>
 			<div id="language"></div>
 			<div id="status"></div>
+			<div id="more-info-box">
+				<div id="more-info-title">Find out more!</div>
+				<button id="social-url" href="#" onclick=socialUrlFunc()>Social</button>
+				<button id="embassy-url" href="#" onclick=embassyUrlFunc()>Embassy</button>
+			</div>
 		</div>
 
 		<div id="diplomacy-box">
 			<div id="date-1">Click on a photo to begin!</div>
-			<div id="event"></div>
+			<div id="event">Click and drag to move around!</div>
 			<div id="diplomacy-buttons">
-				<button id="source-1">Info 1</button>
-				<button id="source-2">Info 2</button>
+				<button id="source-1" href="#" onclick=sourceOneFunc()></button>
+				<button id="source-2" href="#" onclick=sourceTwoFunc()></button>
+			</div>
+		</div>
+		<div id="help-box">
+			<div id="help-title">Instructions</div>
+			<div id="help-subtitle">
+				<h4>Use your mouse to click and drag the globe around.
+				Click on the buttons in the "option box" to change the information being displayed.
+				Click on the points of interest/timeline photos to display their information.
+				Have fun exploring the world!</h4>
 			</div>
 		</div>
 		<script type="text/javascript" src="../js/app.js"></script>

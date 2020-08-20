@@ -1,7 +1,7 @@
 # IMPACTGLOBE
 
 ### Running from local machine
-1. #### Click on the "download" button in the upper right corner, next to the pencil.
+1. #### Click on the "download" button in the upper right corner.
 2. #### Save the files to a folder of your choosing.
 3. #### Open the folder which you chose, press and hold shift-key + right click to open drop down menu
 4. #### Release shift-key + right click and then left click on the option "Open Powershell window here"
